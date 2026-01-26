@@ -6,9 +6,7 @@ plugins {
 
 android {
     namespace = "com.codeturtle.subway_kiosk"
-    compileSdk {
-        version = release(36)
-    }
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.codeturtle.subway_kiosk"
