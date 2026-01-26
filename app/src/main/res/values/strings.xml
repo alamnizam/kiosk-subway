@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">Subway-KIOSK</string>
+    <string name="establishing_elo_connection">Establishing Elo connection..</string>
+    <string name="retry">Retry</string>
+    <string name="restaurant">Restaurant: #</string>
+    <string name="scanner_initializing">Establishing scanner connection..</string>
+    <string name="payment_initializing">Connecting payment terminal..</string>
+    <string name="sync_initializing">Fetching contents..</string>
+    <string name="continue_anyway">Continue anyway</string>
 </resources>
