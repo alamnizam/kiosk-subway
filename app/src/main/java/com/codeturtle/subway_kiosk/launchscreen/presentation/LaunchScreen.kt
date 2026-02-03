@@ -57,134 +57,147 @@ fun ProcessingUI(
     uiState: LaunchScreenUIState,
     uiEvent: (LaunchScreenUIEvent) -> Unit
 ) {
-    val composition by rememberLottieComposition(
-        LottieCompositionSpec.RawRes(R.raw.cookie_animation)
-    )
+    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.cookie_animation))
     val progress by animateLottieCompositionAsState(
         composition = composition,
         isPlaying = true,
         iterations = LottieConstants.IterateForever
     )
+
     Box(
-        modifier = Modifier
-            .padding(innerPadding)
-            .fillMaxSize(),
+        modifier = Modifier.padding(innerPadding).fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-
         Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(
-                    paddingValues = PaddingValues(horizontal = 10.dp)
-                ),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            ),
-            elevation = CardDefaults.cardElevation(
-                defaultElevation = 10.dp
-            )
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp),
-                contentAlignment = Alignment.Center
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
             ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    LottieAnimation(
-                        modifier = Modifier.size(250.dp),
-                        composition = composition,
-                        progress = { progress }
-                    )
-                    Spacer(Modifier.height(10.dp))
-                    if (uiState.isEloConnectionVisible) {
-                        Text(
-                            modifier = Modifier
-                                .clickable { uiEvent(LaunchScreenUIEvent.EloConnectionClicked) },
-                            text = buildAnnotatedString {
-                                append(stringResource(R.string.establishing_elo_connection))
-                                append(" ")
-                                withStyle(style = SpanStyle(textDecoration = TextDecoration.Underline)) {
-                                    append(stringResource(R.string.retry))
-                                }
-                            },
-                            style = MaterialTheme.typography.titleLarge
-                        )
-                        Spacer(Modifier.height(10.dp))
-                    }
-                    if (uiState.isRestaurantsVisible) {
-                        Text(
-                            text = stringResource(R.string.restaurant),
-                            style = MaterialTheme.typography.titleLarge
-                        )
-                    }
-                    if (uiState.isEstablishingScannerVisible) {
-                        Spacer(Modifier.height(10.dp))
-                        Text(
-                            modifier = Modifier
-                                .clickable { uiEvent(LaunchScreenUIEvent.ScannerConnectionClicked) },
-                            text = buildAnnotatedString {
-                                append(stringResource(R.string.scanner_initializing))
-                                append(" ")
-                                withStyle(style = SpanStyle(textDecoration = TextDecoration.Underline)) {
-                                    append(stringResource(R.string.retry))
-                                }
-                            },
-                            style = MaterialTheme.typography.titleLarge
-                        )
-                        Spacer(Modifier.height(10.dp))
-                    }
-                    if (uiState.isConnectionPaymentVisible) {
-                        Text(
-                            modifier = Modifier
-                                .clickable { uiEvent(LaunchScreenUIEvent.PaymentConnectionClicked) },
-                            text = buildAnnotatedString {
-                                append(stringResource(R.string.payment_initializing))
-                                append(" ")
-                                withStyle(style = SpanStyle(textDecoration = TextDecoration.Underline)) {
-                                    append(stringResource(R.string.retry))
-                                }
-                            },
-                            style = MaterialTheme.typography.titleLarge
-                        )
-                        Spacer(Modifier.height(30.dp))
-                    }
-                    if (uiState.isSyncInitializingVisible) {
-                        Text(
-                            modifier = Modifier
-                                .clickable { uiEvent(LaunchScreenUIEvent.FetchingContentClicked) },
-                            text = buildAnnotatedString {
-                                append(stringResource(R.string.sync_initializing))
-                                append(" ")
-                                withStyle(style = SpanStyle(textDecoration = TextDecoration.Underline)) {
-                                    append(stringResource(R.string.retry))
-                                }
-                            },
-                            style = MaterialTheme.typography.titleLarge
-                        )
-                        Spacer(Modifier.height(30.dp))
-                    }
-                    if (uiState.isContinueAnywayVisible) {
-                        Text(
-                            modifier = Modifier
-                                .clickable { uiEvent(LaunchScreenUIEvent.ContinueAnywayClicked) },
-                            text = buildAnnotatedString {
-                                withStyle(style = SpanStyle(textDecoration = TextDecoration.Underline)) {
-                                    append(stringResource(R.string.continue_anyway))
-                                }
-                            },
-                            style = MaterialTheme.typography.titleLarge
-                        )
-                    }
-                }
+                LottieAnimation(
+                    modifier = Modifier.size(250.dp),
+                    composition = composition,
+                    progress = { progress }
+                )
+
+                StatusItemsList(uiState, uiEvent)
             }
         }
     }
+}
 
+@Composable
+private fun RetryableText(messageRes: Int, onClick: () -> Unit) {
+    Text(
+        modifier = Modifier.clickable(onClick = onClick),
+        text = buildAnnotatedString {
+            append(stringResource(messageRes))
+            append(" ")
+            withStyle(style = SpanStyle(textDecoration = TextDecoration.Underline)) {
+                append(stringResource(R.string.retry))
+            }
+        },
+        style = MaterialTheme.typography.titleLarge
+    )
+}
+
+@Composable
+private fun StatusItemsList(
+    uiState: LaunchScreenUIState,
+    uiEvent: (LaunchScreenUIEvent) -> Unit
+) {
+    data class StatusItem(
+        val isVisible: Boolean,
+        val topSpacing: Int = 10,
+        val bottomSpacing: Int = 10,
+        val content: @Composable () -> Unit
+    )
+
+    val statusItems = listOf(
+        StatusItem(
+            isVisible = uiState.isEloConnectionVisible,
+            content = {
+                RetryableText(
+                    messageRes = R.string.establishing_elo_connection,
+                    onClick = { uiEvent(LaunchScreenUIEvent.EloConnectionClicked) }
+                )
+            }
+        ),
+        StatusItem(
+            isVisible = uiState.isRestaurantsVisible,
+            topSpacing = 0,
+            bottomSpacing = 0,
+            content = {
+                Text(
+                    text = stringResource(R.string.restaurant),
+                    style = MaterialTheme.typography.titleLarge
+                )
+            }
+        ),
+        StatusItem(
+            isVisible = uiState.isEstablishingScannerVisible,
+            content = {
+                RetryableText(
+                    messageRes = R.string.scanner_initializing,
+                    onClick = { uiEvent(LaunchScreenUIEvent.ScannerConnectionClicked) }
+                )
+            }
+        ),
+        StatusItem(
+            isVisible = uiState.isConnectionPaymentVisible,
+            topSpacing = 0,
+            bottomSpacing = 30,
+            content = {
+                RetryableText(
+                    messageRes = R.string.payment_initializing,
+                    onClick = { uiEvent(LaunchScreenUIEvent.PaymentConnectionClicked) }
+                )
+            }
+        ),
+        StatusItem(
+            isVisible = uiState.isSyncInitializingVisible,
+            topSpacing = 0,
+            bottomSpacing = 30,
+            content = {
+                RetryableText(
+                    messageRes = R.string.sync_initializing,
+                    onClick = { uiEvent(LaunchScreenUIEvent.FetchingContentClicked) }
+                )
+            }
+        ),
+        StatusItem(
+            isVisible = uiState.isContinueAnywayVisible,
+            topSpacing = 0,
+            bottomSpacing = 0,
+            content = {
+                Text(
+                    modifier = Modifier.clickable { uiEvent(LaunchScreenUIEvent.ContinueAnywayClicked) },
+                    text = buildAnnotatedString {
+                        withStyle(style = SpanStyle(textDecoration = TextDecoration.Underline)) {
+                            append(stringResource(R.string.continue_anyway))
+                        }
+                    },
+                    style = MaterialTheme.typography.titleLarge
+                )
+            }
+        )
+    )
+
+    statusItems.forEach { item ->
+        if (item.isVisible) {
+            if (item.topSpacing > 0) {
+                Spacer(Modifier.height(item.topSpacing.dp))
+            }
+            item.content()
+            if (item.bottomSpacing > 0) {
+                Spacer(Modifier.height(item.bottomSpacing.dp))
+            }
+        }
+    }
 }
 
 
