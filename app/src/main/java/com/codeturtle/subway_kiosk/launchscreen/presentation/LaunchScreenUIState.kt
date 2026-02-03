@@ -1,11 +1,16 @@
 package com.codeturtle.subway_kiosk.launchscreen.presentation
 
+import com.codeturtle.subway_kiosk.common.utils.UiText
+
 data class LaunchScreenUIState(
-    val eloConnectionVisibility: Int = -1,
-    val restaurantsText: String = "",
-    val establishingScannerText: String = "",
-    val establishingScannerVisibility: Int = -1,
-    val connectionPaymentText: String = "",
-    val connectionPaymentVisibility: String = "",
-    val continueAnywayVisibility: Int = -1,
+    val eloConnection: UiText? = null,
+    val isEloConnectionVisible: Boolean = true,
+    val restaurantsText: UiText? = null,
+    val isRestaurantsVisible: Boolean = true,
+    val establishingScannerText: UiText? = null,
+    val isEstablishingScannerVisible: Boolean = true,
+    val connectionPaymentText: UiText? = null,
+    val isConnectionPaymentVisible: Boolean = true,
+    val isSyncInitializingVisible: Boolean = true,
+    val isContinueAnywayVisible: Boolean = true,
 )

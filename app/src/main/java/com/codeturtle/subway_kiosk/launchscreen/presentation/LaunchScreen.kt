@@ -26,6 +26,8 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
@@ -35,14 +37,41 @@ import com.codeturtle.subway_kiosk.R
 
 @Composable
 fun LaunchScreen(
+    viewModel: LaunchScreenViewModel = hiltViewModel<LaunchScreenViewModel>(),
     innerPadding: PaddingValues,
 ) {
+    val uiState = viewModel.uiState.collectAsStateWithLifecycle()
+
+    ProcessingUI(
+        innerPadding = innerPadding,
+        uiState = uiState.value,
+        uiEvent = {
+            viewModel.onEvent(it)
+        }
+    )
+}
+
+@Composable
+fun ProcessingUI(
+    innerPadding: PaddingValues,
+    uiState: LaunchScreenUIState,
+    uiEvent: (LaunchScreenUIEvent) -> Unit
+) {
+    val composition by rememberLottieComposition(
+        LottieCompositionSpec.RawRes(R.raw.cookie_animation)
+    )
+    val progress by animateLottieCompositionAsState(
+        composition = composition,
+        isPlaying = true,
+        iterations = LottieConstants.IterateForever
+    )
     Box(
         modifier = Modifier
             .padding(innerPadding)
             .fillMaxSize(),
         contentAlignment = Alignment.Center
-    ){
+    ) {
+
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -56,114 +85,115 @@ fun LaunchScreen(
                 defaultElevation = 10.dp
             )
         ) {
-            ProcessingUI()
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    LottieAnimation(
+                        modifier = Modifier.size(250.dp),
+                        composition = composition,
+                        progress = { progress }
+                    )
+                    Spacer(Modifier.height(10.dp))
+                    if (uiState.isEloConnectionVisible) {
+                        Text(
+                            modifier = Modifier
+                                .clickable { uiEvent(LaunchScreenUIEvent.EloConnectionClicked) },
+                            text = buildAnnotatedString {
+                                append(stringResource(R.string.establishing_elo_connection))
+                                append(" ")
+                                withStyle(style = SpanStyle(textDecoration = TextDecoration.Underline)) {
+                                    append(stringResource(R.string.retry))
+                                }
+                            },
+                            style = MaterialTheme.typography.titleLarge
+                        )
+                        Spacer(Modifier.height(10.dp))
+                    }
+                    if (uiState.isRestaurantsVisible) {
+                        Text(
+                            text = stringResource(R.string.restaurant),
+                            style = MaterialTheme.typography.titleLarge
+                        )
+                    }
+                    if (uiState.isEstablishingScannerVisible) {
+                        Spacer(Modifier.height(10.dp))
+                        Text(
+                            modifier = Modifier
+                                .clickable { uiEvent(LaunchScreenUIEvent.ScannerConnectionClicked) },
+                            text = buildAnnotatedString {
+                                append(stringResource(R.string.scanner_initializing))
+                                append(" ")
+                                withStyle(style = SpanStyle(textDecoration = TextDecoration.Underline)) {
+                                    append(stringResource(R.string.retry))
+                                }
+                            },
+                            style = MaterialTheme.typography.titleLarge
+                        )
+                        Spacer(Modifier.height(10.dp))
+                    }
+                    if (uiState.isConnectionPaymentVisible) {
+                        Text(
+                            modifier = Modifier
+                                .clickable { uiEvent(LaunchScreenUIEvent.PaymentConnectionClicked) },
+                            text = buildAnnotatedString {
+                                append(stringResource(R.string.payment_initializing))
+                                append(" ")
+                                withStyle(style = SpanStyle(textDecoration = TextDecoration.Underline)) {
+                                    append(stringResource(R.string.retry))
+                                }
+                            },
+                            style = MaterialTheme.typography.titleLarge
+                        )
+                        Spacer(Modifier.height(30.dp))
+                    }
+                    if (uiState.isSyncInitializingVisible) {
+                        Text(
+                            modifier = Modifier
+                                .clickable { uiEvent(LaunchScreenUIEvent.FetchingContentClicked) },
+                            text = buildAnnotatedString {
+                                append(stringResource(R.string.sync_initializing))
+                                append(" ")
+                                withStyle(style = SpanStyle(textDecoration = TextDecoration.Underline)) {
+                                    append(stringResource(R.string.retry))
+                                }
+                            },
+                            style = MaterialTheme.typography.titleLarge
+                        )
+                        Spacer(Modifier.height(30.dp))
+                    }
+                    if (uiState.isContinueAnywayVisible) {
+                        Text(
+                            modifier = Modifier
+                                .clickable { uiEvent(LaunchScreenUIEvent.ContinueAnywayClicked) },
+                            text = buildAnnotatedString {
+                                withStyle(style = SpanStyle(textDecoration = TextDecoration.Underline)) {
+                                    append(stringResource(R.string.continue_anyway))
+                                }
+                            },
+                            style = MaterialTheme.typography.titleLarge
+                        )
+                    }
+                }
+            }
         }
     }
-}
 
-@Composable
-fun ProcessingUI() {
-    val composition by rememberLottieComposition(
-        LottieCompositionSpec.RawRes(R.raw.cookie_animation)
-    )
-    val progress by animateLottieCompositionAsState(
-        composition = composition,
-        isPlaying = true,
-        iterations = LottieConstants.IterateForever
-    )
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(20.dp),
-        contentAlignment = Alignment.Center
-    ){
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            LottieAnimation(
-                modifier = Modifier.size(250.dp),
-                composition = composition,
-                progress = { progress }
-            )
-            Spacer(Modifier.height(10.dp))
-            Text(
-                modifier = Modifier
-                    .clickable {  },
-                text = buildAnnotatedString {
-                    append(stringResource(R.string.establishing_elo_connection))
-                    append(" ")
-                    withStyle(style = SpanStyle(textDecoration = TextDecoration.Underline)) {
-                        append(stringResource(R.string.retry))
-                    }
-                },
-                style = MaterialTheme.typography.titleLarge
-            )
-            Spacer(Modifier.height(10.dp))
-            Text(
-                text = stringResource(R.string.restaurant),
-                style = MaterialTheme.typography.titleLarge
-            )
-            Spacer(Modifier.height(10.dp))
-            Text(
-                modifier = Modifier
-                    .clickable {  },
-                text = buildAnnotatedString {
-                    append(stringResource(R.string.scanner_initializing))
-                    append(" ")
-                    withStyle(style = SpanStyle(textDecoration = TextDecoration.Underline)) {
-                        append(stringResource(R.string.retry))
-                    }
-                },
-                style = MaterialTheme.typography.titleLarge
-            )
-            Spacer(Modifier.height(10.dp))
-            Text(
-                modifier = Modifier
-                    .clickable {  },
-                text = buildAnnotatedString {
-                    append(stringResource(R.string.payment_initializing))
-                    append(" ")
-                    withStyle(style = SpanStyle(textDecoration = TextDecoration.Underline)) {
-                        append(stringResource(R.string.retry))
-                    }
-                },
-                style = MaterialTheme.typography.titleLarge
-            )
-            Spacer(Modifier.height(30.dp))
-            Text(
-                modifier = Modifier
-                    .clickable {  },
-                text = buildAnnotatedString {
-                    append(stringResource(R.string.sync_initializing))
-                    append(" ")
-                    withStyle(style = SpanStyle(textDecoration = TextDecoration.Underline)) {
-                        append(stringResource(R.string.retry))
-                    }
-                },
-                style = MaterialTheme.typography.titleLarge
-            )
-            Spacer(Modifier.height(30.dp))
-            Text(
-                modifier = Modifier
-                    .clickable {  },
-                text = buildAnnotatedString {
-                    withStyle(style = SpanStyle(textDecoration = TextDecoration.Underline)) {
-                        append(stringResource(R.string.continue_anyway))
-                    }
-                },
-                style = MaterialTheme.typography.titleLarge
-            )
-        }
-    }
 }
 
 
 @Preview(showBackground = true, widthDp = 800, heightDp = 1280)
 @Composable
 fun LaunchScreenPreview() {
-    LaunchScreen(
-        innerPadding = PaddingValues(0.dp),
+    ProcessingUI(
+        innerPadding = PaddingValues(),
+        uiState = LaunchScreenUIState(),
+        uiEvent = {}
     )
 }

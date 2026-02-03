@@ -17,7 +17,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             SubwayKIOSKTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    LaunchScreen(innerPadding)
+                    LaunchScreen(innerPadding = innerPadding)
                 }
             }
         }
