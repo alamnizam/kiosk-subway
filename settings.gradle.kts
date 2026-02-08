@@ -23,3 +23,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "Subway-KIOSK"
 include(":app")
+include(":EloViewSDK")
