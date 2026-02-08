@@ -37,4 +37,7 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
+    //EloView
+    implementation(files("libs/eloviewhomeSDK-release.aar"))
 }
